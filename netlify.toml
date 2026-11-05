@@ -1,0 +1,9 @@
+# 台灣大艦隊 7 年航程：單一 HTML 的靜態網站，不需要建置
+[build]
+  publish = "."
+  command = ""
+
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
