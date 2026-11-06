@@ -1270,6 +1270,14 @@ body.ticks #bgmvol{top:122px}
 #bgmvol input::-moz-range-thumb{width:11px;height:11px;border-radius:50%;background:#fff;border:2px solid var(--signal)}
 #bgmvol output{min-width:30px;text-align:right;color:rgba(255,255,255,.75)}
 @media (max-width:767px){#bgmvol{top:auto;right:auto;left:12px;bottom:46px}}
+/* index60: crawl as laid out in the brief — white header line, big orange title, white body, big orange closing line */
+.ctext .ep{color:#fff!important;font-weight:800!important;font-size:.9em!important;letter-spacing:.08em!important;margin-bottom:.15em!important}
+.ctext .ep .bar{color:#fff!important;margin:0 .3em}
+.ctext h2{color:#FF8A3D!important;font-size:1.75em!important;font-weight:900!important;letter-spacing:.1em!important;margin:.05em 0 1.1em!important;
+  text-shadow:0 0 30px rgba(252,110,30,.5)!important}
+.ctext p.w{font-weight:500;letter-spacing:.06em}
+.ctext p.fin{color:#FF8A3D!important;font-size:1.3em!important;font-weight:900!important;letter-spacing:.08em!important;margin-top:.4em!important;
+  text-shadow:0 0 26px rgba(252,96,0,.5)!important}
 /* ==== index58 ==== */
 /* signal cards: they fade in at the centre and fade out in the same place — no sliding */
 @media (min-width:768px){
@@ -1349,10 +1357,12 @@ body:has(#shipin:not([hidden])) #bgm,body:has(#shipin:not([hidden])) #helpb{disp
 <canvas id="scene" aria-label="台灣大艦隊航行場景"></canvas>
 
 <div id="crawl"><div class="cwrap"><div class="cplane"><div class="ctext">
-  <p class="ep">2019 — 2026<span class="bar">｜</span><b>第七任艦長的七年航程</b></p>
-  <p class="w">2019 年，電信產業迎來轉型關鍵時刻，<br>5G、串流、電商與 AI 開啟全新航道。</p>
-  <p class="w">4 月 1 日，總經理<em>林之晨</em>正式接任，<br>提出<em>「超5G」策略</em>，<br>帶領台灣大駛向數位新藍海。</p>
-  <p class="w">七年來，從合併台灣之星、布局 AI 資料中心，<br>到拓展大東南亞市場，<br><span class="fin">台灣大艦隊持續開拓全新航線。</span></p>
+  <p class="ep">2019 — 2026<span class="bar">｜</span>七年航程</p>
+  <h2>台灣大艦隊</h2>
+  <p class="w">2019 年，台灣大迎來轉型關鍵時刻<br>5G、串流、電商與 AI 開啟全新航道</p>
+  <p class="w">4 月 1 日，總經理林之晨正式接任<br>提出「超5G」策略，從電信公司走向科技電信</p>
+  <p class="w">七年來，從合併台灣之星、躍升電信三強<br>到深化精誠資訊布局、進一步擴大版圖</p>
+  <p class="fin">台灣大艦隊持續開拓全新航線</p>
 </div></div></div><button id="skip" type="button">跳過序幕</button></div>
 <div id="intro" aria-hidden="true"><div class="t">
   <span class="b0 en chrome">TAIWAN MOBILE FLEET</span>
@@ -5958,7 +5968,15 @@ function focusWheel(d, dir){
   if(!FOC.n || FOC.towers !== towers) return false;
   const now = performance.now(); FOC.lastWheel = now; FOC.dir = dir;
   const atBound = dir > 0 ? FOC.target >= FOC.n - 1e-3 : FOC.target <= 1e-3;
-  if(!atBound){ focCapture(); FOC.target = THREE.MathUtils.clamp(FOC.target + d/FOC_STEP, 0, FOC.n); FOC.block = now + 520; return true; }
+  if(!atBound){ focCapture();
+    // index60: a scroll no longer leaves the camera parked between two stops — it commits one smooth glide to the next
+    // milestone in that direction; more scrolling while that glide is under way is absorbed instead of stacking up
+    const gliding = Math.abs(FOC.target - FOC.f) > .04 && Math.abs(FOC.target - Math.round(FOC.target)) < 1e-3 && Math.sign(FOC.target - FOC.f) === dir;
+    if(!gliding){
+      const base = dir > 0 ? Math.floor(FOC.f + .03) + 1 : Math.ceil(FOC.f - .03) - 1;
+      FOC.target = THREE.MathUtils.clamp(base, 0, FOC.n);
+    }
+    FOC.block = now + 520; return true; }
   // at either end: swallow the rest of this gesture; only a fresh scroll charges the take-off / return
   
   return false;
