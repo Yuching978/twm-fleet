@@ -1,12 +1,19 @@
 # TWM Fleet｜台灣大艦隊 7 年航程
 
-互動品牌網站，單一檔案 `index.html`（所有 3D 模型、圖片、字型、音樂都已內嵌，不需要建置）。
+互動品牌網站（純靜態，不需要建置）。
+
+- `index.html`：網站本體（3D 模型、貼圖、字型都已內嵌）
+- `bgm.mp3`：背景音樂
+- `ship12f.html`：「進入艦艇」開啟的臺北文創 12F 辦公室導覽
+
+每個檔案都小於 25 MiB（Cloudflare Pages 單檔上限）。
 
 ## 部署
 
-- 推送到 `main` 分支後，Netlify 會自動重新部署。
-- Netlify 設定：Build command 留空，Publish directory 為 `.`（見 `netlify.toml`）。
+推送到 `main` 分支後自動部署：
+- Netlify：Build command 留空，Publish directory 為 `.`（見 `netlify.toml`）
+- Cloudflare Pages：Framework preset 選 None，Build command 留空，Build output directory 填 `/`
 
 ## 版本
 
-目前版本：index60（2026/11/6）
+目前版本：index61（2026/11/6）
