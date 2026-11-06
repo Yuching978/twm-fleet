@@ -1449,7 +1449,6 @@ body:has(#shipin:not([hidden])) #bgm,body:has(#shipin:not([hidden])) #helpb{disp
   </div>
   <div class="flash"></div>
 </div>
-<div id="shipin" hidden aria-label="艦內展區：臺北文創 12F 辦公室導覽"><p class="msg">艦內展區載入中…</p><div class="bar"><button type="button" class="out">離艦，回到航程</button></div></div>
 <div id="toast"></div>
 <div id="ticker" aria-hidden="true"><div class="tk"></div></div>
 <div id="vig"></div>
@@ -8123,8 +8122,12 @@ async function enterShip(){
   await wait(1100);
   flash.classList.add('on'); await wait(200);
   SFX.arrive();
-  const w = null; SHIPIN.open();                                    // index55: the ship's interior opens right here (index56: without the bay showing through)
+  // index62: the ship's exhibition opens in a new tab again (the embedded 12F tour flickered); the hangar bay stays here
+  airlock.classList.add('bay-on');
+  let w = null; try{ w = window.open(SHIP_URL, '_blank'); if(w) w.opener = null; }catch(e){}
+  airlock.querySelector('.bay').classList.toggle('opened', !!w);   // blocked pop-up: the 「前往艦內展區」 button is the way in
   await wait(500); flash.classList.remove('on');
+  $('#gob').focus({preventScroll:true});
 }
 function cleanup(){
   document.body.classList.remove('docking');
@@ -8194,51 +8197,6 @@ $('#exitb').addEventListener('click', leaveShip);
   };
 }
 
-// (r) 進入艦艇 → the ship's interior: the 臺北文創 12F tour (the supplied page) opens full screen inside the voyage,
-//     unpacked from this file; the voyage holds still behind it, and 「離艦，回到航程」 brings it back
-const SHIPIN = (()=>{
-  const box = $('#shipin'), msg = box.querySelector('.msg');
-  let url = null, frame = null, busy = null;
-  async function unpack(){
-    if(url) return url;
-    if(busy) return busy;
-    busy = (async ()=>{
-      const el = document.getElementById('ship12f');
-      if(!el) return url = 'ship12f.html';                             // index61: the hosted site keeps the tour as its own file
-      const b64 = el.textContent.trim(), bin = atob(b64), u8 = new Uint8Array(bin.length);
-      for(let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
-      if(typeof DecompressionStream === 'undefined') throw new Error('no DecompressionStream');
-      const html = await new Response(new Blob([u8]).stream().pipeThrough(new DecompressionStream('gzip'))).blob();
-      return url = URL.createObjectURL(new Blob([html], {type:'text/html'}));
-    })();
-    return busy;
-  }
-  let musicWas = false;
-  async function open(){
-    const bg = $('#bgm'); musicWas = !!(bg && bg.classList.contains('play')); if(musicWas) bg.click();   // the interior has its own sound
-    box.hidden = false; msg.hidden = false; msg.textContent = '艦內展區載入中…';
-    requestAnimationFrame(()=>box.classList.add('on'));
-    try{
-      const u = await unpack();
-      if(!frame){ frame = document.createElement('iframe'); frame.title = '臺北文創 12F 辦公室導覽';
-        frame.addEventListener('load', ()=>{ msg.hidden = true; try{ frame.contentWindow.focus(); }catch(e){} }); }
-      frame.src = u; box.insertBefore(frame, box.firstChild);
-      setTimeout(()=>{ window.__holdVoyage = true; }, 700);
-    }catch(e){ console.warn('ship interior', e); msg.textContent = '這個瀏覽器無法開啟艦內展區，請更新瀏覽器後再試。'; }
-  }
-  async function close(){
-    window.__holdVoyage = false;
-    box.classList.remove('on'); await wait(500);
-    if(frame){ frame.src = 'about:blank'; frame.remove(); }
-    box.hidden = true;
-    const bg = $('#bgm'); if(musicWas && bg && !bg.classList.contains('play')) bg.click(); musicWas = false;
-  }
-  box.querySelector('.out').addEventListener('click', ()=>{ close(); const ex = $('#exitb'); if(ex) ex.click(); });
-  addEventListener('keydown', e=>{ if(e.key === 'Escape' && !box.hidden) box.querySelector('.out').click(); });
-  // start unpacking as soon as the boarding button is pressed, so it is ready when the hatch opens
-  const eb = $('#enterb'); if(eb) eb.addEventListener('click', ()=>{ unpack().catch(()=>{}); });
-  return {open, close};
-})();
 </script>
 </body>
 </html>
